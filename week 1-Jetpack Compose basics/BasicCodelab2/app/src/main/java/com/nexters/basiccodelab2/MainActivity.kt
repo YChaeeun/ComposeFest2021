@@ -1,5 +1,6 @@
 package com.nexters.basiccodelab2
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,7 +37,7 @@ fun OnboardingScreen(onClick: () -> Unit) {
 			verticalArrangement = Arrangement.Center,
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
-			Text("Welcome to the Basics Codelab!!")
+			Text("Welcome to the Basics Codelab!!", style = MaterialTheme.typography.h4)
 			Button(
 				modifier = Modifier.padding(vertical = 24.dp),
 				onClick = onClick
@@ -108,7 +109,9 @@ fun Greeting(name: String) {
 					.fillMaxWidth()
 					.padding(bottom = extraPadding.coerceAtLeast(0.dp))) {
 				Text(text = "Hello, ")
-				Text(text = name)
+				Text(
+					text = name,
+					style = MaterialTheme.typography.h3.copy(fontWeight = FontWeight.ExtraBold))
 			}
 			OutlinedButton(
 				onClick = { expanded.value = !expanded.value }
@@ -128,6 +131,8 @@ fun OnboardPreview() {
 	}
 }
 
+// multiple preview for themes
+@Preview(showBackground = true, widthDp = 320, heightDp = 320, uiMode = UI_MODE_NIGHT_YES, name = "DefaultPreviewDark")
 @Preview(showBackground = true, name = "preview", widthDp = 320, heightDp = 320)
 @Composable
 fun DefaultPreview() {
