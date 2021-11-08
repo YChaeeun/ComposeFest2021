@@ -5,18 +5,20 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,8 +28,90 @@ class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContent {
-			PhotographerCard()
+			LayoutCodelabs()
+//			PhotographerCard()
 		}
+	}
+}
+
+@Composable
+fun LayoutCodelabs() {
+	Scaffold(
+		topBar = {
+			TopContent()
+		},
+		bottomBar = {
+			BottomContent()
+		}
+	) { innerPadding ->
+		// can chain extra padding
+		// Modifier.padding(innerPadding).padding(8.dp)
+		BodyContent(Modifier.padding(innerPadding))
+	}
+}
+
+@Composable
+fun TopContent() {
+	TopAppBar(
+		title = {
+			Text(text = "LayoutCodelab")
+		},
+		actions = {
+			IconButton(onClick = { }) {
+				// predefined material icons
+				// https://fonts.google.com/icons?selected=Material+Icons
+				Icon(Icons.Filled.Favorite, contentDescription = null)
+			}
+		}
+	)
+}
+
+@Composable
+fun BodyContent(modifier: Modifier = Modifier) {
+	// if we want to put extra padding, we can chain .padding() to parameter
+	// ex) modifier.padding(8.dp)
+	Column(modifier = modifier) {
+		Text(text = "Hi there~!")
+		Text(text = "Thanks for going through the Layout codelab")
+	}
+}
+
+@Composable
+fun BottomContent() {
+	val menus = listOf(Pair(Icons.Filled.Coffee, "coffee"), Pair(Icons.Filled.Light, "light"), Pair(Icons.Filled.Dining, "dining"), Pair(Icons.Filled.Flatware, "flatware"))
+
+	BottomNavigation {
+		menus.forEach { (icon, title) ->
+			bottomMenu(icons = icon, title = title)
+		}
+	}
+
+//	BottomAppBar(
+//		content = {
+//			IconToggleButton(checked = true, onCheckedChange = {}) {
+//				Icon(Icons.Filled.ToggleOn, contentDescription = null)
+//			}
+//			Text("bottom", modifier = Modifier.padding(start = 5.dp))
+//		}
+//	)
+}
+
+@Composable
+fun RowScope.bottomMenu(icons: ImageVector, title: String) {
+	Column(
+		Modifier
+			.padding(start = 10.dp, end = 10.dp)
+			.align(CenterVertically)) {
+		Icon(icons, contentDescription = null, modifier = Modifier.align(CenterHorizontally))
+		Text(title)
+	}
+}
+
+@Preview
+@Composable
+fun LayoutCodelabsPreview() {
+	LayoutCodelabTheme {
+		LayoutCodelabs()
 	}
 }
 
