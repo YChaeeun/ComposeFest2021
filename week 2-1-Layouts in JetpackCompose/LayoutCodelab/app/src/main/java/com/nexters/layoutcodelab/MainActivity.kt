@@ -3,9 +3,10 @@ package com.nexters.layoutcodelab
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -22,14 +24,102 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.rememberImagePainter
 import com.nexters.layoutcodelab.ui.theme.LayoutCodelabTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContent {
-			LayoutCodelabs()
+			ScrollingList()
+//			LayoutCodelabs()
 //			PhotographerCard()
+		}
+	}
+}
+
+@Composable
+fun SimpleList() {
+	// Column list renders all items, even not visible on the screen --> BAD performance
+	// Instead, use LazyColumn
+	val scrollState = rememberScrollState()
+
+	Column(Modifier.verticalScroll(scrollState)) {
+		repeat(100) {
+			Text("Item #$it")
+		}
+	}
+}
+
+@Composable
+fun LazyList() {
+	val scrollState = rememberLazyListState()
+
+	LazyColumn(state = scrollState, modifier = Modifier.width(320.dp)) {
+		items(100) {
+			Text("Item #$it")
+		}
+	}
+}
+
+@ExperimentalCoilApi
+@Composable
+fun ImageList() {
+	val scrollState = rememberLazyListState()
+
+	LazyColumn(state = scrollState) {
+		items(100) {
+			ImageListItem(index = it)
+		}
+	}
+}
+
+@ExperimentalCoilApi
+@Composable
+fun ImageListItem(index: Int) {
+	Row(verticalAlignment = CenterVertically) {
+		Image(
+			painter = rememberImagePainter(data = "https://developer.android.com/images/brand/Android_Robot.png"),
+			contentDescription = "Android Logo",
+			modifier = Modifier.size(50.dp)
+		)
+		Spacer(modifier = Modifier.width(10.dp))
+		Text("Item #$index", style = MaterialTheme.typography.subtitle1)
+	}
+}
+
+@ExperimentalCoilApi
+@Composable
+fun ScrollingList() {
+	val listSize = 100
+	val scrollState = rememberLazyListState()
+	val coroutineScope = rememberCoroutineScope()
+
+	Column {
+		Row {
+			Button(onClick = {
+				coroutineScope.launch {
+					scrollState.animateScrollToItem(0)
+				}
+			}) {
+				Text("Scroll To Top")
+			}
+
+			Button(onClick = {
+				coroutineScope.launch {
+					scrollState.animateScrollToItem(listSize - 1)
+				}
+			}) {
+				Text("Scroll To Bottom")
+			}
+		}
+
+		LazyColumn(state = scrollState) {
+			items(listSize) {
+				ImageListItem(index = it)
+			}
 		}
 	}
 }
@@ -73,6 +163,7 @@ fun BodyContent(modifier: Modifier = Modifier) {
 	Column(modifier = modifier) {
 		Text(text = "Hi there~!")
 		Text(text = "Thanks for going through the Layout codelab")
+		LazyList()
 	}
 }
 
