@@ -21,8 +21,13 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.layout.FirstBaseline
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
@@ -33,12 +38,88 @@ class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContent {
-			ScrollingList()
+			BodyContent_My()
+//			ScrollingList()
 //			LayoutCodelabs()
 //			PhotographerCard()
 		}
 	}
 }
+
+@Composable
+fun MyOwnColumn(
+	modifier: Modifier = Modifier,
+	// add custom layout attributes
+	content: @Composable () -> Unit
+) {
+	Layout(
+		modifier = modifier,
+		content = content
+	) { measurables, constraints ->
+
+		// List of measured children
+		val placeables = measurables.map { measurable ->
+			// measure each child
+			measurable.measure(constraints)
+		}
+
+		// track the y co-ord we have placed children up to
+		var positionY = 0
+
+		// set layout as big as possible
+		layout(constraints.maxWidth, constraints.maxHeight) {
+			// place children
+			placeables.forEach { placeable ->
+				// position item on the screen
+				placeable.placeRelative(x = 0, y = positionY)
+				positionY += placeable.height
+			}
+		}
+	}
+}
+
+@Preview
+@Composable
+fun BodyContent_My(modifier: Modifier = Modifier) {
+	MyOwnColumn(modifier.padding(8.dp)) {
+		Text("MyOwnColumn")
+		Text("places items")
+		Text("vertically.")
+		Text("We've done it by hand~")
+	}
+}
+
+@Preview
+@Composable
+fun TextWithPaddingToBaselinePreview() {
+	LayoutCodelabTheme {
+		Text("Hi - with firstBaselineToTop", modifier = Modifier.firstBaselineToTop(32.dp))
+		Text("Hi - with padding", modifier = Modifier.padding(32.dp))
+	}
+}
+
+/**
+ * measurable : child to be measured and placed
+ * constraints : minimum and maximum for the width and height of the child
+ */
+fun Modifier.firstBaselineToTop(firstBaselineToTop: Dp) = this.then(
+	layout { measurable, constraints ->
+		val placeable = measurable.measure(constraints)
+
+		// check the composable has a first baseline
+		check(placeable[FirstBaseline] != AlignmentLine.Unspecified)
+		val firstBaseline = placeable[FirstBaseline]
+
+		// height of the composable with padding - first baseline
+		val placeableY = firstBaselineToTop.roundToPx() - firstBaseline
+		val height = placeable.height + placeableY
+
+		layout(placeable.width, height) {
+			// where composable gets placed
+			placeable.placeRelative(0, placeableY)
+		}
+	}
+)
 
 @Composable
 fun SimpleList() {
