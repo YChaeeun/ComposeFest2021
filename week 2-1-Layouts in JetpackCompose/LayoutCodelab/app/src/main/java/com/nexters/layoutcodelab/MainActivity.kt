@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.layout.FirstBaseline
@@ -33,15 +34,114 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.nexters.layoutcodelab.ui.theme.LayoutCodelabTheme
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContent {
-			BodyContent_My()
+			BodyContent_StaggeredGrid()
+//			BodyContent_My()
 //			ScrollingList()
 //			LayoutCodelabs()
 //			PhotographerCard()
+		}
+	}
+}
+
+val topics = listOf(
+	"Arts & Crafts", "Beauty", "Books", "Business", "Comics", "Culinary",
+	"Design", "Fashion", "Film", "History", "Maths", "Music", "People", "Philosophy",
+	"Religion", "Social sciences", "Technology", "TV", "Writing"
+)
+
+@Preview
+@Composable
+fun BodyContent_StaggeredGrid_Preview() {
+	LayoutCodelabTheme {
+		BodyContent_StaggeredGrid()
+	}
+}
+
+@Composable
+fun BodyContent_StaggeredGrid(modifier: Modifier = Modifier) {
+	Row(modifier = modifier.horizontalScroll(rememberScrollState())) {
+		StaggeredGrid(modifier = modifier, rows = 5) {
+			topics.forEach { topic ->
+				Chip(modifier = Modifier.padding(10.dp), text = topic)
+			}
+		}
+	}
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ChipPreview() {
+	LayoutCodelabTheme {
+		Chip(modifier = Modifier.padding(10.dp), text = "Hi there")
+	}
+}
+
+@Composable
+fun Chip(modifier: Modifier = Modifier, text: String) {
+	Card(modifier = modifier, border = BorderStroke(color = Color.Black, width = Dp.Hairline), shape = RoundedCornerShape(8.dp)) {
+		Row(
+			modifier = Modifier.padding(10.dp, 5.dp, 10.dp, 5.dp),
+			verticalAlignment = Alignment.CenterVertically
+		) {
+			Box(
+				modifier = Modifier
+					.size(16.dp, 16.dp)
+					.background(color = MaterialTheme.colors.secondary)
+			)
+			Spacer(modifier = Modifier.width(5.dp))
+			Text(text = text)
+		}
+	}
+}
+
+@Composable
+fun StaggeredGrid(modifier: Modifier = Modifier, rows: Int = 3, content: @Composable () -> Unit) {
+	Layout(modifier = modifier, content = content) { measurables, constraints ->
+		val rowWidths = IntArray(rows) { 0 }
+		val rowHeights = IntArray(rows) { 0 }
+
+		// list of measured children
+		val placeables = measurables.mapIndexed { index, measurable ->
+			val placeable = measurable.measure(constraints)
+
+			// track the width & height of each row
+			val row = index % rows
+			rowWidths[row] += placeable.width
+			rowHeights[row] = max(rowHeights[row], placeable.height)
+
+			placeable
+		}
+
+		// Grid's width == widest row
+		val width = rowWidths.maxOrNull()?.coerceIn(constraints.minWidth.rangeTo(constraints.maxWidth)) ?: constraints.minWidth
+		// Grid's  height == sum of tallest element of each row
+		val height = rowHeights.sumOf { it }.coerceIn(constraints.minHeight.rangeTo(constraints.maxHeight))
+
+		// Y of each row - accumulation of previous rows
+		val rowY = IntArray(rows) { 0 }
+		for (i in 1 until rows) {
+			rowY[i] = rowY[i - 1] + rowHeights[i - 1]
+		}
+
+		// place children
+		// set the size of parent layout
+		layout(width, height) {
+			val rowX = IntArray(rows) { 0 }
+
+			placeables.forEachIndexed { i, placeable ->
+				val row = i % rows
+				placeable.placeRelative(
+					x = rowX[row],
+					y = rowY[row]
+				)
+				rowX[row] += placeable.width
+			}
 		}
 	}
 }
