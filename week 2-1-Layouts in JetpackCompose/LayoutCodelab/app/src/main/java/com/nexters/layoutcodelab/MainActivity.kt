@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
@@ -22,14 +23,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.AlignmentLine
-import androidx.compose.ui.layout.FirstBaseline
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.nexters.layoutcodelab.ui.theme.LayoutCodelabTheme
@@ -45,6 +42,38 @@ class MainActivity : ComponentActivity() {
 //			ScrollingList()
 //			LayoutCodelabs()
 //			PhotographerCard()
+		}
+	}
+}
+
+@Stable
+fun Modifier.padding(all: Dp) =
+	this.then(
+		PaddingModifier(start = all, top = all, end = all, bottom = all, rtlAware = true)
+	)
+
+private class PaddingModifier(
+	val start: Dp = 0.dp,
+	val top: Dp = 0.dp,
+	val end: Dp = 0.dp,
+	val bottom: Dp = 0.dp,
+	val rtlAware: Boolean
+) : LayoutModifier {
+	override fun MeasureScope.measure(measurable: Measurable, constraints: Constraints): MeasureResult {
+		val horizontal = start.roundToPx() + end.roundToPx()
+		val vertical = top.roundToPx() + bottom.roundToPx()
+
+		val placeable = measurable.measure(constraints.offset(-horizontal, -vertical))
+
+		val width = constraints.constrainWidth(placeable.width + horizontal)   // width of child + horizontal padding value
+		val height = constraints.constrainHeight(placeable.height + vertical) // height of child + vertical padding value
+
+		return layout(width, height) {
+			if (rtlAware) {
+				placeable.placeRelative(start.roundToPx(), top.roundToPx())
+			} else {
+				placeable.place(start.roundToPx(), top.roundToPx())
+			}
 		}
 	}
 }
@@ -65,7 +94,28 @@ fun BodyContent_StaggeredGrid_Preview() {
 
 @Composable
 fun BodyContent_StaggeredGrid(modifier: Modifier = Modifier) {
-	Row(modifier = modifier.horizontalScroll(rememberScrollState())) {
+	/**  modifier chains,,,
+	 * 	- update the constraints : from left to right ---->
+	 * 	- return back the size   : from right to left <----
+	 */
+
+	/** ex) .size(200.dp).padding(16.dp)
+	 * 		- return back size : Row (200 - 16 - 16) = 168
+	 * 	    // width for parent : 200
+	 * 		// width for child : 168.dp _ size reduced to 200, then 16 * 2 gone for padding value
+	 *
+	 *  ex) .padding(16.dp).size(200.dp)
+	 *      - return back size : Row (16 + 16 + 200) = 232.dp
+	 *      // width for parent : 232.dp
+	 *      // width for child : 200.dp _ size 200 for staggered grid
+	 */
+
+	Row(
+		modifier = modifier
+			.background(color = Color.Gray)
+			.padding(16.dp)
+			.size(200.dp)
+			.horizontalScroll(rememberScrollState())) {
 		StaggeredGrid(modifier = modifier, rows = 5) {
 			topics.forEach { topic ->
 				Chip(modifier = Modifier.padding(10.dp), text = topic)
