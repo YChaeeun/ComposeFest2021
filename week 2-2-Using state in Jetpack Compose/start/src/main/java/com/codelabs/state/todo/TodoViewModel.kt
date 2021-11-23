@@ -21,17 +21,21 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class TodoViewModel : ViewModel() {
+	// use ViewModel to hoist the state from TodoScreen - to achieve "unidirectional data flow" design
 
-    private var _todoItems = MutableLiveData(listOf<TodoItem>())
-    val todoItems: LiveData<List<TodoItem>> = _todoItems
+	// state
+	private var _todoItems = MutableLiveData(listOf<TodoItem>())
+	val todoItems: LiveData<List<TodoItem>> = _todoItems
 
-    fun addItem(item: TodoItem) {
-        _todoItems.value = _todoItems.value!! + listOf(item)
-    }
+	// event : add item
+	fun addItem(item: TodoItem) {
+		_todoItems.value = _todoItems.value!! + listOf(item)
+	}
 
-    fun removeItem(item: TodoItem) {
-        _todoItems.value = _todoItems.value!!.toMutableList().also {
-            it.remove(item)
-        }
-    }
+	// event : remove item
+	fun removeItem(item: TodoItem) {
+		_todoItems.value = _todoItems.value!!.toMutableList().also {
+			it.remove(item)
+		}
+	}
 }

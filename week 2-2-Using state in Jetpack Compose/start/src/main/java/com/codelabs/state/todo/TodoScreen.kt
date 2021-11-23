@@ -39,6 +39,13 @@ import kotlin.random.Random
 
 /**
  * Stateless component that is responsible for the entire todo screen.
+ *   Stateless
+ *      - cannot directly change any state
+ *      - fewer bugs, easier to test, easy to reuse
+ *
+ *   State hoisting
+ *      - pattern of moving state up to make a component stateless
+ *      - two parameters : value(to display) & onValueChange(an event that requests the value to change)
  *
  * @param items (state) list of [TodoItem] to display
  * @param onAddItem (event) request an item be added

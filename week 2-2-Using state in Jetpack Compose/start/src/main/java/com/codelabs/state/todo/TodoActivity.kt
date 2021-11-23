@@ -21,20 +21,37 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import com.codelabs.state.ui.StateCodelabTheme
 
 class TodoActivity : AppCompatActivity() {
 
-    val todoViewModel by viewModels<TodoViewModel>()
+	val todoViewModel by viewModels<TodoViewModel>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            StateCodelabTheme {
-                Surface {
-                    // TODO: build the screen in compose
-                }
-            }
-        }
-    }
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+		setContent {
+			StateCodelabTheme {
+				// Surface : add a background to the app & configures the color of text
+				Surface {
+					TodoActivityScreen(viewModel = todoViewModel)
+				}
+			}
+		}
+	}
+
+	@Composable
+	fun TodoActivityScreen(viewModel: TodoViewModel) { // TodoScreen is not coupled to the specific place - by passing viewModel as parameter
+		val items: List<TodoItem> by viewModel.todoItems.observeAsState(listOf()) // pass state down - using .observeAsState()
+		// by : property delegate syntax, automatically unwrap the State<List<TodoItem>> into List<TodoItem>
+		// .observeAsState() : observe a LiveData<T> & convert it into State<T> object --> so Composable can react to value changes
+
+		TodoScreen(
+			items = items,
+			onAddItem = { viewModel.addItem(it) },      // flow events up - pass addItem from the viewModel
+			onRemoveItem = { viewModel.removeItem(it) } // flow events up - pass removeItem from the viewModel
+		)
+	}
 }
