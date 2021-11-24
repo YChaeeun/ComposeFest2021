@@ -92,7 +92,7 @@ fun TodoScreen(
  * @param modifier modifier for this element
  */
 @Composable
-fun TodoRow(todo: TodoItem, onItemClicked: (TodoItem) -> Unit, modifier: Modifier = Modifier) {
+fun TodoRow(todo: TodoItem, onItemClicked: (TodoItem) -> Unit, modifier: Modifier = Modifier,  iconAlpha: Float = remember(todo.id) { randomTint() }) {
     Row(
         modifier = modifier
             .clickable { onItemClicked(todo) }
@@ -106,10 +106,9 @@ fun TodoRow(todo: TodoItem, onItemClicked: (TodoItem) -> Unit, modifier: Modifie
          *   - value will be stored in the composition tree & only be recomputed if the keys to remember changes
          */
         // Recomposition of a composable must be "idempotent" - always produces the same result for the same input & no side effects
-        val iconAlpha: Float = remember(todo.id) { randomTint() } // recompute when the key(todo.id) changes
         Icon(
             imageVector = todo.icon.imageVector,
-            tint = LocalContentColor.current.copy(alpha = iconAlpha),
+            tint = LocalContentColor.current.copy(alpha = iconAlpha), // make remembered values controllable by getting them as parameter
             // LocalContentColor : preferred color for content, can be changed by composables such as Surface
             contentDescription = stringResource(id = todo.icon.contentDescription)
         )
