@@ -57,7 +57,7 @@ fun TodoScreen(
 ) {
     Column {
         TodoItemInputBackground(elevate = true, modifier = Modifier.fillMaxWidth()) {
-            TodoItemInput(onItemComplete = onAddItem)
+            TodoItemEntryInput(onItemComplete = onAddItem)
         }
 
         LazyColumn(
@@ -87,7 +87,7 @@ fun TodoScreen(
 
 @Preview
 @Composable
-fun PreviewTodoItemInput() = TodoItemInput(onItemComplete = {})
+fun PreviewTodoItemInput() = TodoItemEntryInput(onItemComplete = {})
 
 /** State hoisting
  *   - pattern of moving state up to make component stateless
@@ -98,8 +98,10 @@ fun PreviewTodoItemInput() = TodoItemInput(onItemComplete = {})
  *   4. Interceptable : can decide to ignore or modify events
  *   5. Decoupled : state can be stored anywhere ex) Room database
  */
+
+// State
 @Composable
-fun TodoItemInput(onItemComplete: (TodoItem) -> Unit) {
+fun TodoItemEntryInput(onItemComplete: (TodoItem) -> Unit) {
     /** mutableStateOf()
      *   - value : the initial value for the MutableState
      *   - policy : a policy to controls how changes are handled in mutable snapshots.
@@ -114,6 +116,19 @@ fun TodoItemInput(onItemComplete: (TodoItem) -> Unit) {
         setText("")
     }
 
+    TodoItemInput(text = text, onTextChange = setText, icon = icon, setIcon = setIcon, submit = submit, isIconVisible = isIconVisible)
+}
+
+// Stateless - reusable UI related codes
+@Composable
+fun TodoItemInput(
+    text: String,
+    onTextChange: (String) -> Unit,
+    icon: TodoIcon,
+    setIcon: (TodoIcon) -> Unit,
+    submit: () -> Unit,
+    isIconVisible: Boolean
+) {
     Column {
         Row(
             Modifier
@@ -122,7 +137,7 @@ fun TodoItemInput(onItemComplete: (TodoItem) -> Unit) {
         ) {
             TodoInputText(
                 text = text,
-                onTextChange = setText,
+                onTextChange = onTextChange,
                 Modifier
                     .weight(1f)
                     .padding(end = 8.dp),
