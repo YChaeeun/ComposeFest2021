@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -99,8 +100,17 @@ fun TodoRow(todo: TodoItem, onItemClicked: (TodoItem) -> Unit, modifier: Modifie
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(todo.task)
+
+        /** remember
+         *   - gives a composable function memory (storage for a single object to a function)
+         *   - value will be stored in the composition tree & only be recomputed if the keys to remember changes
+         */
+        // Recomposition of a composable must be "idempotent" - always produces the same result for the same input & no side effects
+        val iconAlpha: Float = remember(todo.id) { randomTint() } // recompute when the key(todo.id) changes
         Icon(
             imageVector = todo.icon.imageVector,
+            tint = LocalContentColor.current.copy(alpha = iconAlpha),
+            // LocalContentColor : preferred color for content, can be changed by composables such as Surface
             contentDescription = stringResource(id = todo.icon.contentDescription)
         )
     }
