@@ -94,28 +94,47 @@ fun TodoScreen(
 @Composable
 fun PreviewTodoItemInput() = TodoItemInput(onItemComplete = {})
 
+/** State hoisting
+ *   - pattern of moving state up to make component stateless
+ *
+ *   1. Single source of truth : can ensure there's only one source of truth for the data
+ *   2. Encapsulated : keep only one composable stateful, even though multiple composable use the state
+ *   3. Shareable : hoisted state can be shared as an immutable
+ *   4. Interceptable : can decide to ignore or modify events
+ *   5. Decoupled : state can be stored anywhere ex) Room database
+ */
 @Composable
 fun TodoItemInput(onItemComplete: (TodoItem) -> Unit) {
+    /** mutableStateOf()
+     *   - value : the initial value for the MutableState
+     *   - policy : a policy to controls how changes are handled in mutable snapshots.
+     */
+    val (text, setText) = remember { mutableStateOf("") }
     Column {
         Row(
             Modifier
                 .padding(horizontal = 16.dp)
                 .padding(top = 16.dp)
         ) {
-            TodoInputTextField(
+            TodoInputText(
+                text = text,
+                onTextChange = setText,
                 Modifier
                     .weight(1f)
-                    .padding(end = 8.dp))
+                    .padding(end = 8.dp)
+            )
 
-            TodoEditButton(onClick = { /*TODO*/ }, text = "Add", modifier = Modifier.align(Alignment.CenterVertically))
+            TodoEditButton(
+                onClick = {
+                    onItemComplete(TodoItem(text))
+                    setText("")
+                },
+                text = "Add",
+                modifier = Modifier.align(Alignment.CenterVertically),
+                enabled = text.isNotBlank()
+            )
         }
     }
-}
-
-@Composable
-fun TodoInputTextField(modifier: Modifier = Modifier) {
-    val (text, setText) = remember { mutableStateOf("") } // internal state in TodoInputTextField
-    TodoInputText(text, setText, modifier)
 }
 
 /**
