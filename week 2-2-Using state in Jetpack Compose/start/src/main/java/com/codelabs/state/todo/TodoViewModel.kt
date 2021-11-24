@@ -16,26 +16,53 @@
 
 package com.codelabs.state.todo
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 
 class TodoViewModel : ViewModel() {
 	// use ViewModel to hoist the state from TodoScreen - to achieve "unidirectional data flow" design
 
+	private var currentEditPosition by mutableStateOf(-1)
+
 	// state
-	private var _todoItems = MutableLiveData(listOf<TodoItem>())
-	val todoItems: LiveData<List<TodoItem>> = _todoItems
+	var todoItems = mutableStateListOf<TodoItem>()
+		private set // restricting writes to this state object to a private setter only visible in viewModel
+
+	// state : TodoItems
+	val currentEditItem: TodoItem?
+		get() = todoItems.getOrNull(currentEditPosition)
+	// whenever composable calls currentEditItem, it will observe changes to both todoItems & currentEditPosition to get new value
 
 	// event : add item
 	fun addItem(item: TodoItem) {
-		_todoItems.value = _todoItems.value!! + listOf(item)
+		todoItems.add(item)
 	}
 
 	// event : remove item
 	fun removeItem(item: TodoItem) {
-		_todoItems.value = _todoItems.value!!.toMutableList().also {
-			it.remove(item)
+		todoItems.remove(item)
+		onEditDone() // close keep editor
+	}
+
+	// event : onEditItemSelected
+	fun onEditItemSelected(item: TodoItem) {
+		currentEditPosition = todoItems.indexOf(item)
+	}
+
+	// event : onEditDone
+	fun onEditDone() {
+		currentEditPosition = -1
+	}
+
+	// event : onEditItemChange
+	fun onEditItemChange(item: TodoItem) {
+		val currentItem = requireNotNull(currentEditItem) // throw illegal if item is null
+		require(currentItem.id == item.id) { // require(value) { message } : if value is false, throw illegal and show message
+			"You can only change an item withe the same id as currentEditItem"
 		}
+		todoItems[currentEditPosition] = item
 	}
 }

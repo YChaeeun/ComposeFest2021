@@ -44,12 +44,8 @@ class TodoActivity : AppCompatActivity() {
 
 	@Composable
 	fun TodoActivityScreen(viewModel: TodoViewModel) { // TodoScreen is not coupled to the specific place - by passing viewModel as parameter
-		val items: List<TodoItem> by viewModel.todoItems.observeAsState(listOf()) // pass state down - using .observeAsState()
-		// by : property delegate syntax, automatically unwrap the State<List<TodoItem>> into List<TodoItem>
-		// .observeAsState() : observe a LiveData<T> & convert it into State<T> object --> so Composable can react to value changes
-
 		TodoScreen(
-			items = items,
+			items = viewModel.todoItems,
 			onAddItem = { viewModel.addItem(it) },      // flow events up - pass addItem from the viewModel
 			onRemoveItem = { viewModel.removeItem(it) } // flow events up - pass removeItem from the viewModel
 		)
