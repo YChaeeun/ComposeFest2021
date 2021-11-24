@@ -223,8 +223,8 @@ fun TodoInputText(
         onValueChange = onTextChange,
         colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.Transparent),
         maxLines = 1,
-        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = {
+        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
+        keyboardActions = KeyboardActions(onSend = {
             onImeAction()
             keyboardController?.hide()
         }),
