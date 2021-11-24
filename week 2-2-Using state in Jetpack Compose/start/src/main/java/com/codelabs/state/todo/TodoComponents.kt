@@ -209,6 +209,14 @@ fun TodoInputText(
     modifier: Modifier = Modifier,
     onImeAction: () -> Unit = {}
 ) {
+
+    /** TextField
+     *   - stateless composable equivalent to Material's "EditText"
+     *   - built-in composable that follows unidirectional data flow designs
+     *
+     *  Stateless Composable
+     *    - composable that owns a piece of state that it can change over time
+     */
     val keyboardController = LocalSoftwareKeyboardController.current
     TextField(
         value = text,
