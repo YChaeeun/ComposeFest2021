@@ -22,8 +22,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import com.codelabs.state.ui.StateCodelabTheme
 
 class TodoActivity : AppCompatActivity() {
@@ -46,8 +44,12 @@ class TodoActivity : AppCompatActivity() {
 	fun TodoActivityScreen(viewModel: TodoViewModel) { // TodoScreen is not coupled to the specific place - by passing viewModel as parameter
 		TodoScreen(
 			items = viewModel.todoItems,
-			onAddItem = { viewModel.addItem(it) },      // flow events up - pass addItem from the viewModel
-			onRemoveItem = { viewModel.removeItem(it) } // flow events up - pass removeItem from the viewModel
+			currentlyEditing = viewModel.currentEditItem,
+			onAddItem = viewModel::addItem,      // flow events up - pass addItem from the viewModel
+			onRemoveItem = viewModel::removeItem, // flow events up - pass removeItem from the viewModel
+			onStartEdit = viewModel::onEditItemSelected,
+			onEditItemChange = viewModel::onEditItemChange,
+			onEditDone = viewModel::onEditDone
 		)
 	}
 }

@@ -58,9 +58,8 @@ class TodoViewModelTest {
 		viewModel.addItem(item2)
 		viewModel.onEditItemSelected(item2)
 
-		val newItem = TodoItem(id = item2.id, task = "hello", icon = TodoIcon.Default)
-		viewModel.onEditItemChange(newItem)
+		viewModel.onEditItemChange(item2.copy(task = "hello"))
 
-		assertThat(viewModel.todoItems[1]).isEqualTo(newItem)
+		assertThat(viewModel.todoItems[1]).isEqualTo(item2.copy(task = "hello"))
 	}
 }
