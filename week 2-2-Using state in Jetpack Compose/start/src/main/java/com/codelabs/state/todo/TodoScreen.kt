@@ -49,79 +49,98 @@ import kotlin.random.Random
  */
 @Composable
 fun TodoScreen(
-    items: List<TodoItem>,
-    currentlyEditing: TodoItem?,
-    onAddItem: (TodoItem) -> Unit,
-    onRemoveItem: (TodoItem) -> Unit,
-    onStartEdit: (TodoItem) -> Unit,
-    onEditItemChange: (TodoItem) -> Unit,
-    onEditDone: () -> Unit
+	items: List<TodoItem>,
+	currentlyEditing: TodoItem?,
+	onAddItem: (TodoItem) -> Unit,
+	onRemoveItem: (TodoItem) -> Unit,
+	onStartEdit: (TodoItem) -> Unit,
+	onEditItemChange: (TodoItem) -> Unit,
+	onEditDone: () -> Unit
 ) {
-    Column {
-        val enableTopSection = currentlyEditing == null
-        TodoItemInputBackground(elevate = enableTopSection) {
-            if (enableTopSection) {
-                TodoItemEntryInput(onItemComplete = onAddItem)
-            } else {
-                Text(
-                    "Editing Item",
-                    style = MaterialTheme.typography.h6,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
+	Column {
+		val enableTopSection = currentlyEditing == null
+		TodoItemInputBackground(elevate = enableTopSection) {
+			if (enableTopSection) {
+				TodoItemEntryInput(onItemComplete = onAddItem)
+			} else {
+				Text(
+					"Editing Item",
+					style = MaterialTheme.typography.h6,
+					textAlign = TextAlign.Center,
+					modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .padding(16.dp)
                         .fillMaxWidth()
-                )
-            }
-        }
+				)
+			}
+		}
 
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(top = 8.dp)
-        ) {
-            items(items = items) { todo ->
-                if (currentlyEditing?.id == todo.id) {
-                    TodoItemInlineEditor(
-                        item = currentlyEditing,
-                        onEditItemChange = onEditItemChange,
-                        onEditDone = onEditDone,
-                        onRemoveItem = { onRemoveItem(todo) })
-                } else {
-                    TodoRow(
-                        todo = todo,
-                        onItemClicked = onStartEdit,
-                        modifier = Modifier.fillParentMaxWidth()
-                    )
-                }
-            }
-        }
+		LazyColumn(
+			modifier = Modifier.weight(1f),
+			contentPadding = PaddingValues(top = 8.dp)
+		) {
+			items(items = items) { todo ->
+				if (currentlyEditing?.id == todo.id) {
+					TodoItemInlineEditor(
+						item = currentlyEditing,
+						onEditItemChange = onEditItemChange,
+						onEditDone = onEditDone,
+						onRemoveItem = { onRemoveItem(todo) })
+				} else {
+					TodoRow(
+						todo = todo,
+						onItemClicked = onStartEdit,
+						modifier = Modifier.fillParentMaxWidth()
+					)
+				}
+			}
+		}
 
-        // For quick testing, a random item generator button
-        Button(
-            onClick = { onAddItem(generateRandomTodoItem()) },
-            modifier = Modifier
+		// For quick testing, a random item generator button
+		Button(
+			onClick = { onAddItem(generateRandomTodoItem()) },
+			modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(),
-        ) {
-            Text("Add random item")
-        }
-    }
+		) {
+			Text("Add random item")
+		}
+	}
 }
 
 // Stateless - only displays the item passed
 @Composable
 fun TodoItemInlineEditor(
-    item: TodoItem,
-    onEditItemChange: (TodoItem) -> Unit,
-    onEditDone: () -> Unit,
-    onRemoveItem: (TodoItem) -> Unit
+	item: TodoItem,
+	onEditItemChange: (TodoItem) -> Unit,
+	onEditDone: () -> Unit,
+	onRemoveItem: () -> Unit
 ) = TodoItemInput(
-    text = item.task,
-    onTextChange = { onEditItemChange(item.copy(task = it)) }, // .copy() : make copy of the data class with parameter changed
-    icon = item.icon,
-    onIconChange = { onEditItemChange(item.copy(icon= it)) },
-    submit = { onEditDone() },
-    isIconVisible = true
+	text = item.task,
+	onTextChange = { onEditItemChange(item.copy(task = it)) }, // .copy() : make copy of the data class with parameter changed
+	icon = item.icon,
+	onIconChange = { onEditItemChange(item.copy(icon = it)) },
+	submit = { onEditDone() },
+	isIconVisible = true,
+	buttonSlot = {
+		Row {
+			val shrinkButtons = Modifier.widthIn(20.dp)
+			TextButton(onClick = onEditDone, modifier = shrinkButtons) {
+				Text(
+					text = "\uD83D\uDCBE", // floppy disk
+					textAlign = TextAlign.End,
+					modifier = Modifier.width(30.dp)
+				)
+			}
+			TextButton(onClick = onRemoveItem, modifier = shrinkButtons) {
+				Text(
+					text = "❌",
+					textAlign = TextAlign.End,
+					modifier = Modifier.width(30.dp)
+				)
+			}
+		}
+	}
 )
 
 @Preview
@@ -141,63 +160,62 @@ fun PreviewTodoItemInput() = TodoItemEntryInput(onItemComplete = {})
 // State
 @Composable
 fun TodoItemEntryInput(onItemComplete: (TodoItem) -> Unit) {
-    /** mutableStateOf()
-     *   - value : the initial value for the MutableState
-     *   - policy : a policy to controls how changes are handled in mutable snapshots.
-     */
-    val (text, setText) = remember { mutableStateOf("") }
-    val (icon, setIcon) = remember { mutableStateOf(TodoIcon.Default) }
-    val isIconVisible = text.isNotBlank()
+	/** mutableStateOf()
+	 *   - value : the initial value for the MutableState
+	 *   - policy : a policy to controls how changes are handled in mutable snapshots.
+	 */
+	val (text, setText) = remember { mutableStateOf("") }
+	val (icon, setIcon) = remember { mutableStateOf(TodoIcon.Default) }
+	val isIconVisible = text.isNotBlank()
 
-    val submit = {
-        onItemComplete(TodoItem(text,icon))
-        setIcon(TodoIcon.Default)
-        setText("")
-    }
+	val submit = {
+		onItemComplete(TodoItem(text, icon))
+		setIcon(TodoIcon.Default)
+		setText("")
+	}
 
-    TodoItemInput(text = text, onTextChange = setText, icon = icon, onIconChange = setIcon, submit = submit, isIconVisible = isIconVisible)
+	TodoItemInput(text = text, onTextChange = setText, icon = icon, onIconChange = setIcon, submit = submit, isIconVisible = isIconVisible) {
+		TodoEditButton(onClick = submit, text = "Add", enabled = text.isNotBlank())
+	}
 }
 
 // Stateless - reusable UI related codes
 @Composable
 fun TodoItemInput(
-    text: String,
-    onTextChange: (String) -> Unit,
-    icon: TodoIcon,
-    onIconChange: (TodoIcon) -> Unit,
-    submit: () -> Unit,
-    isIconVisible: Boolean
+	text: String,
+	onTextChange: (String) -> Unit,
+	icon: TodoIcon,
+	onIconChange: (TodoIcon) -> Unit,
+	submit: () -> Unit,
+	isIconVisible: Boolean,
+	buttonSlot: @Composable () -> Unit
 ) {
-    Column {
-        Row(
+	Column {
+		Row(
             Modifier
                 .padding(horizontal = 16.dp)
                 .padding(top = 16.dp)
-        ) {
-            TodoInputText(
-                text = text,
-                onTextChange = onTextChange,
+		) {
+			TodoInputText(
+				text = text,
+				onTextChange = onTextChange,
                 Modifier
                     .weight(1f)
                     .padding(end = 8.dp),
-                onImeAction = submit
-            )
+				onImeAction = submit
+			)
 
-            TodoEditButton(
-                onClick = submit,
-                text = "Add",
-                modifier = Modifier.align(Alignment.CenterVertically),
-                enabled = text.isNotBlank()
-            )
-        }
+			Spacer(modifier = Modifier.width(8.dp))
+			Box(Modifier.align(Alignment.CenterVertically)) { buttonSlot() }
+		}
 
-        // instead of setting "visibility", remove and add composable from the composition
-        if (isIconVisible) {
-            AnimatedIconRow(icon = icon, onIconChange = onIconChange, Modifier.padding(8.dp))
-        } else {
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-    }
+		// instead of setting "visibility", remove and add composable from the composition
+		if (isIconVisible) {
+			AnimatedIconRow(icon = icon, onIconChange = onIconChange, Modifier.padding(8.dp))
+		} else {
+			Spacer(modifier = Modifier.height(16.dp))
+		}
+	}
 }
 
 /**
@@ -208,48 +226,48 @@ fun TodoItemInput(
  * @param modifier modifier for this element
  */
 @Composable
-fun TodoRow(todo: TodoItem, onItemClicked: (TodoItem) -> Unit, modifier: Modifier = Modifier,  iconAlpha: Float = remember(todo.id) { randomTint() }) {
-    Row(
-        modifier = modifier
+fun TodoRow(todo: TodoItem, onItemClicked: (TodoItem) -> Unit, modifier: Modifier = Modifier, iconAlpha: Float = remember(todo.id) { randomTint() }) {
+	Row(
+		modifier = modifier
             .clickable { onItemClicked(todo) }
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(todo.task)
+		horizontalArrangement = Arrangement.SpaceBetween
+	) {
+		Text(todo.task)
 
-        /** remember
-         *   - gives a composable function memory (storage for a single object to a function)
-         *   - value will be stored in the composition tree & only be recomputed if the keys to remember changes
-         */
-        // Recomposition of a composable must be "idempotent" - always produces the same result for the same input & no side effects
-        Icon(
-            imageVector = todo.icon.imageVector,
-            tint = LocalContentColor.current.copy(alpha = iconAlpha), // make remembered values controllable by getting them as parameter
-            // LocalContentColor : preferred color for content, can be changed by composables such as Surface
-            contentDescription = stringResource(id = todo.icon.contentDescription)
-        )
-    }
+		/** remember
+		 *   - gives a composable function memory (storage for a single object to a function)
+		 *   - value will be stored in the composition tree & only be recomputed if the keys to remember changes
+		 */
+		// Recomposition of a composable must be "idempotent" - always produces the same result for the same input & no side effects
+		Icon(
+			imageVector = todo.icon.imageVector,
+			tint = LocalContentColor.current.copy(alpha = iconAlpha), // make remembered values controllable by getting them as parameter
+			// LocalContentColor : preferred color for content, can be changed by composables such as Surface
+			contentDescription = stringResource(id = todo.icon.contentDescription)
+		)
+	}
 }
 
 private fun randomTint(): Float {
-    return Random.nextFloat().coerceIn(0.3f, 0.9f)
+	return Random.nextFloat().coerceIn(0.3f, 0.9f)
 }
 
 @Preview
 @Composable
 fun PreviewTodoScreen() {
-    val items = listOf(
-        TodoItem("Learn compose", TodoIcon.Event),
-        TodoItem("Take the codelab"),
-        TodoItem("Apply state", TodoIcon.Done),
-        TodoItem("Build dynamic UIs", TodoIcon.Square)
-    )
-    TodoScreen(items, items[2], {}, {}, {}, {}, {})
+	val items = listOf(
+		TodoItem("Learn compose", TodoIcon.Event),
+		TodoItem("Take the codelab"),
+		TodoItem("Apply state", TodoIcon.Done),
+		TodoItem("Build dynamic UIs", TodoIcon.Square)
+	)
+	TodoScreen(items, items[2], {}, {}, {}, {}, {})
 }
 
 @Preview
 @Composable
 fun PreviewTodoRow() {
-    val todo = remember { generateRandomTodoItem() }
-    TodoRow(todo = todo, onItemClicked = {}, modifier = Modifier.fillMaxWidth())
+	val todo = remember { generateRandomTodoItem() }
+	TodoRow(todo = todo, onItemClicked = {}, modifier = Modifier.fillMaxWidth())
 }
