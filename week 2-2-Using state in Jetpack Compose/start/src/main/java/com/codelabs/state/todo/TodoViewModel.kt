@@ -61,7 +61,7 @@ class TodoViewModel : ViewModel() {
 	fun onEditItemChange(item: TodoItem) {
 		val currentItem = requireNotNull(currentEditItem) // throw illegal if item is null
 		require(currentItem.id == item.id) { // require(value) { message } : if value is false, throw illegal and show message
-			"You can only change an item withe the same id as currentEditItem"
+			"You can only change an item with the same id as currentEditItem"
 		}
 		todoItems[currentEditPosition] = item
 	}
